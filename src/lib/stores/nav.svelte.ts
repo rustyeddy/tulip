@@ -18,6 +18,7 @@ export interface NavPage {
 
 export const PAGES: NavPage[] = [
   { key: 'live-trade', label: 'Live trade', icon: 'ti-player-play', section: 'Trading', live: true },
+  { key: 'trades',     label: 'Trades',     icon: 'ti-list',        section: 'Trading' },
   { key: 'chart',      label: 'Chart',      icon: 'ti-chart-line',  section: 'Trading' },
   { key: 'backtests',  label: 'Backtests',  icon: 'ti-flask',       section: 'Trading', badge: 4 },
   { key: 'strategies', label: 'Strategies', icon: 'ti-code',        section: 'Setup' },
