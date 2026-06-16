@@ -17,7 +17,7 @@
     fetchAbort?.abort();
     fetchAbort = new AbortController();
     try {
-      trades = await api.trades();
+      trades = await api.trades(fetchAbort.signal);
       fetchError = '';
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') return;
