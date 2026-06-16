@@ -1,0 +1,101 @@
+@import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg-app:       #181A1F;
+  --bg-sidebar:   #13151A;
+  --bg-card:      #1A1C22;
+  --bg-hover:     #1E2028;
+  --bg-active:    #1E1D3A;
+
+  --border:       #2A2D35;
+  --border-light: #1E2028;
+
+  --text-primary:   #E8E9EC;
+  --text-secondary: #C8CAD4;
+  --text-muted:     #7A7F90;
+  --text-faint:     #4A4E5C;
+  --text-hint:      #5A5E6B;
+
+  --purple-bright:  #AFA9EC;
+  --purple-mid:     #7F77DD;
+  --purple-strong:  #534AB7;
+  --purple-dark:    #26215C;
+  --purple-tint:    #1E1D3A;
+
+  --green-bright:   #5DCAA5;
+  --green-mid:      #1D9E75;
+  --green-dark:     #0F6E56;
+  --green-tint:     #0A1F18;
+  --green-border:   #0F3328;
+
+  --red-bright:     #F09595;
+  --red-mid:        #E24B4A;
+  --red-dark:       #791F1F;
+  --red-tint:       #200D0D;
+  --red-border:     #3A1A1A;
+
+  --amber:          #EF9F27;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  --sidebar-w: 200px;
+  --topbar-h:  48px;
+  --order-w:   214px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100vh;
+  overflow: hidden;
+}
+
+button, input, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--purple-mid);
+  outline-offset: 1px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.positive { color: var(--green-mid); }
+.negative { color: var(--red-mid); }
+.neutral  { color: var(--text-hint); }
+.warning  { color: var(--amber); }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
