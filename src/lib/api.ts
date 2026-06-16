@@ -1,11 +1,12 @@
 // Typed REST client for the trader daemon API.
 const BASE = import.meta.env.VITE_API_URL ?? '';
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+async function request<T>(method: string, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const res = await fetch(BASE + path, {
     method,
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
     body: body ? JSON.stringify(body) : undefined,
+    signal,
   });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
@@ -19,7 +20,7 @@ export const api = {
 
   account: () => request<AccountSummary>('GET', '/api/v1/account'),
 
-  trades: () => request<OpenTrade[]>('GET', '/api/v1/trades'),
+  trades: (signal?: AbortSignal) => request<OpenTrade[]>('GET', '/api/v1/trades', undefined, signal),
 
   closeTrade: (tradeId: string, units = 0) =>
     request<CloseTradeResult>('DELETE', `/api/v1/trades/${tradeId}?units=${units}`),

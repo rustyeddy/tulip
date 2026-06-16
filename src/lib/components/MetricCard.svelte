@@ -13,10 +13,10 @@
 
 <div class="metric-card">
   <span class="metric-label">{label}</span>
-  <span class="metric-value" class:positive={tone === 'positive'} class:negative={tone === 'negative'}>
+  <span class="metric-value" class:positive={tone === 'positive'} class:negative={tone === 'negative'} class:warning={tone === 'warning'}>
     {value}
   </span>
-  <span class="metric-delta" class:positive={tone === 'positive'} class:neutral={tone === 'neutral'}>
+  <span class="metric-delta" class:positive={tone === 'positive'} class:neutral={tone === 'neutral'} class:warning={tone === 'warning'}>
     {delta}
   </span>
 </div>
