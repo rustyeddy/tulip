@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { api, type OpenTrade, type PlaceOrderProposal } from '../api';
   import ConfirmDialog from './ConfirmDialog.svelte';
+  import { fmtPrice, fmtMoney, plClass, side, sideClass } from '../utils';
 
   // ── Trades list ─────────────────────────────────────────────────────────────
 
@@ -9,11 +10,17 @@
   let loading = $state(true);
   let fetchError = $state('');
 
+  // AbortController for the in-flight fetch so polling never races itself.
+  let fetchAbort: AbortController | null = null;
+
   async function loadTrades() {
+    fetchAbort?.abort();
+    fetchAbort = new AbortController();
     try {
       trades = await api.trades();
       fetchError = '';
     } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
       fetchError = e instanceof Error ? e.message : 'Failed to load trades';
     } finally {
       loading = false;
@@ -23,7 +30,10 @@
   onMount(() => {
     loadTrades();
     const interval = setInterval(loadTrades, 5000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      fetchAbort?.abort();
+    };
   });
 
   // ── Selected trade + side panel ───────────────────────────────────────────
@@ -70,11 +80,13 @@
   async function confirmClose() {
     if (!selected) return;
     closeLoading = true;
+    closeMsg = '';
     try {
       await api.closeTrade(selected.ID, parseInt(closeUnits) || 0);
       closeMsg = 'Trade closed.';
       selected = null;
       await loadTrades();
+      setTimeout(() => { closeMsg = ''; }, 3000);
     } catch (e) {
       closeMsg = e instanceof Error ? e.message : 'Close failed';
     } finally {
@@ -137,14 +149,7 @@
   function cancelPreview() { orderPreview = null; orderMsg = ''; }
 
   // ── Formatting ────────────────────────────────────────────────────────────
-
-  function fmtPrice(n: number) { return n.toFixed(5); }
-  function fmtMoney(n: number) {
-    return n.toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
-  }
-  function plClass(n: number) { return n >= 0 ? 'positive' : 'negative'; }
-  function side(units: number) { return units > 0 ? 'LONG' : 'SHORT'; }
-  function sideClass(units: number) { return units > 0 ? 'positive' : 'negative'; }
+  // Helpers imported from src/lib/utils.ts: fmtPrice, fmtMoney, plClass, side, sideClass
 </script>
 
 <ConfirmDialog

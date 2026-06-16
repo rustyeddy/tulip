@@ -4,7 +4,7 @@ Items ported from trader/ui that still need to be implemented.
 
 ## High Priority
 
-- [ ] **Trades page** (`src/routes/trades/+page.svelte`)
+- [ ] **Trades page** (`src/lib/components/TradesPage.svelte`)
   - Full open trades list with sortable columns
   - Trade selection with side panel
   - Update stop loss / take profit
@@ -12,21 +12,21 @@ Items ported from trader/ui that still need to be implemented.
   - New order form with preview (units, risk amount, entry/stop)
   - Place order confirmation
 
-- [ ] **Backtests page** (`src/routes/backtests/+page.svelte`)
+- [ ] **Backtests page** (`src/lib/components/BacktestsPage.svelte` — to be created)
   - List view with filter (instrument, strategy) and sort (9 metrics)
   - Detail panel with trade-by-trade breakdown and pagination (25/page)
   - Side-by-side comparison mode
   - Run new backtest panel (textarea config input)
   - Export backtest as .org file
 
-- [ ] **Charts page** (`src/routes/charts/+page.svelte`)
+- [ ] **Charts page** (`src/lib/components/ChartPage.svelte` — to be created)
   - Backtest selector dropdown
   - Interactive candle chart using lightweight-charts
   - Trade entry/exit markers with P/L labels
   - Stats bar (Balance, Net P/L, Return %, Trades, Win Rate, R:R, Max DD)
   - Loading and error states
 
-- [ ] **Replay page** (`src/routes/replay/+page.svelte`)
+- [ ] **Replay page** (`src/lib/components/ReplayPage.svelte` — to be created)
   - Form: instrument, timeframe, date range, strategy (8 options), exit strategy,
     regime filter (5 options), warmup bars
   - Run button with loading state
@@ -35,7 +35,7 @@ Items ported from trader/ui that still need to be implemented.
 
 ## Medium Priority
 
-- [ ] **ConfirmDialog component** (`src/lib/components/ConfirmDialog.svelte`)
+- [x] **ConfirmDialog component** (`src/lib/components/ConfirmDialog.svelte`)
   - Reusable modal with title, message, confirmLabel, danger flag
   - Keyboard: Escape to cancel, Enter to confirm
   - Backdrop click to dismiss
@@ -64,4 +64,4 @@ Items ported from trader/ui that still need to be implemented.
 - [ ] Implement Data management page (currently placeholder)
 - [ ] Implement Account settings page (currently placeholder)
 - [ ] Implement Admin panel page (currently placeholder)
-- [ ] Centralize format utilities (`fmtPrice`, `fmtMoney`, `plClass`, `side`, `sideClass`)
+- [x] Centralize format utilities (`fmtPrice`, `fmtMoney`, `plClass`, `side`, `sideClass`) → `src/lib/utils.ts`

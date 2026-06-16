@@ -107,9 +107,9 @@ Component props are typed with a local `interface Props` and destructured via `l
 
 ## Replacing mock data
 
-- `src/lib/data/mockData.js` — swap for real portfolio/position API responses.
-- `src/lib/data/candles.js` — swap `generateCandles()` for a broker WebSocket feed or REST poll.
-- `orderState.symbolPrice` (`order.svelte.js`) — wire to a live quote stream.
+- `src/lib/data/mockData.ts` — swap for real portfolio/position API responses.
+- `src/lib/data/candles.ts` — swap `generateCandles()` for a broker WebSocket feed or REST poll.
+- `orderState.symbolPrice` (`order.svelte.ts`) — wire to a live quote stream.
 
 ## Colour tokens
 

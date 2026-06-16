@@ -1,4 +1,4 @@
-import { readable, type Readable } from 'svelte/store';
+import { readable, derived, type Readable } from 'svelte/store';
 
 export type SSEStatus = 'connecting' | 'open' | 'closed' | 'error';
 
@@ -11,36 +11,47 @@ export interface SSEStore<T> {
  * Create a Svelte readable store backed by an SSE endpoint.
  * The EventSource auto-reconnects on drop; the store reflects the latest
  * value of the named event. Closes cleanly when the last subscriber leaves.
+ *
+ * A single EventSource is shared between the `data` and `status` stores to
+ * avoid opening two HTTP connections to the same endpoint.
  */
 export function sseStore<T>(url: string, eventName: string): SSEStore<T> {
-  let es: EventSource | null = null;
+  // Internal store that owns the EventSource lifetime.
+  const _es = readable<EventSource | null>(null, (set) => {
+    const es = new EventSource(url);
+    set(es);
+    return () => {
+      es.close();
+      set(null);
+    };
+  });
 
-  const data = readable<T | null>(null, (set) => {
-    es = new EventSource(url);
-
-    es.addEventListener(eventName, (e: MessageEvent) => {
+  const data = derived<typeof _es, T | null>(_es, (es, set) => {
+    if (!es) return;
+    const handler = (e: MessageEvent) => {
       try {
         set(JSON.parse(e.data) as T);
       } catch {
         // malformed JSON — ignore
       }
-    });
-
-    return () => {
-      es?.close();
-      es = null;
     };
-  });
+    es.addEventListener(eventName, handler);
+    return () => es.removeEventListener(eventName, handler);
+  }, null);
 
-  const status = readable<SSEStatus>('connecting', (set) => {
-    // Re-open a separate EventSource just to track readyState.
-    // Both share the same HTTP connection via the browser's SSE layer.
-    const tracker = new EventSource(url);
-    tracker.onopen = () => set('open');
-    tracker.onerror = () =>
-      set(tracker.readyState === EventSource.CLOSED ? 'closed' : 'error');
-    return () => tracker.close();
-  });
+  const status = derived<typeof _es, SSEStatus>(_es, (es, set) => {
+    if (!es) { set('closed'); return; }
+    set('connecting');
+    const onOpen = () => set('open');
+    const onError = () =>
+      set(es.readyState === EventSource.CLOSED ? 'closed' : 'error');
+    es.addEventListener('open', onOpen);
+    es.addEventListener('error', onError);
+    return () => {
+      es.removeEventListener('open', onOpen);
+      es.removeEventListener('error', onError);
+    };
+  }, 'connecting');
 
   return { data, status };
 }
