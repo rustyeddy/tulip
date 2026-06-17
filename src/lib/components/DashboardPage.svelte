@@ -47,17 +47,28 @@
   let transactions  = $state<Transaction[]>([]);
   let txLoading     = $state(true);
 
+  let tradesAbort: AbortController | null = null;
+  let lastTxId = 0;
+
   async function loadTrades() {
+    tradesAbort?.abort();
+    tradesAbort = new AbortController();
     try {
-      openTrades = await api.trades();
-    } catch { /* backend may be offline */ }
-    finally { tradesLoading = false; }
+      openTrades = await api.trades(tradesAbort.signal);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === 'AbortError') return;
+    } finally { tradesLoading = false; }
   }
 
   async function loadTransactions() {
     try {
-      const res = await api.transactions(0);
-      transactions = res.transactions ?? [];
+      const res = await api.transactions(lastTxId);
+      const incoming = res.transactions ?? [];
+      if (incoming.length > 0) {
+        transactions.unshift(...incoming);
+        if (transactions.length > 200) transactions.length = 200;
+        lastTxId = res.last_transaction_id;
+      }
     } catch { /* backend may be offline */ }
     finally { txLoading = false; }
   }
@@ -112,6 +123,7 @@
       clearInterval(healthInterval);
       clearInterval(tradesInterval);
       clearInterval(txInterval);
+      tradesAbort?.abort();
       unsubAccount();
       unsubStatus();
       unsubEvents();

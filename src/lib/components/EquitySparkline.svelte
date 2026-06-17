@@ -1,3 +1,7 @@
+<script module>
+  let _counter = 0;
+</script>
+
 <script lang="ts">
   interface Props {
     values?:      number[];
@@ -8,7 +12,10 @@
 
   let { values = [], width = 300, height = 60, strokeWidth = 1.5 }: Props = $props();
 
-  let pts    = $derived(values.length > 1 ? values : [0, 0]);
+  // Unique per-instance ID so multiple sparklines on the same page don't share gradient ids.
+  const fillId = `equity-fill-${++_counter}`;
+
+  let pts    = $derived(values.length > 1 ? values : values.length === 1 ? [values[0], values[0]] : [0, 0]);
   let min    = $derived(Math.min(...pts));
   let max    = $derived(Math.max(...pts));
   let range  = $derived(max - min || 1);
@@ -27,12 +34,12 @@
 
 <svg {width} {height} viewBox="0 0 {width} {height}" style="overflow: visible; width: 100%; height: {height}px;">
   <defs>
-    <linearGradient id="equity-fill" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%"   stop-color={stroke} stop-opacity="0.25" />
       <stop offset="100%" stop-color={stroke} stop-opacity="0.02" />
     </linearGradient>
   </defs>
-  <path d={area} fill="url(#equity-fill)" />
+  <path d={area} fill="url(#{fillId})" />
   <polyline
     points={polyline}
     fill="none"
