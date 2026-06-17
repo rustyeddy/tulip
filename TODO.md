@@ -65,3 +65,8 @@ Items ported from trader/ui that still need to be implemented.
 - [ ] Implement Account settings page (currently placeholder)
 - [ ] Implement Admin panel page (currently placeholder)
 - [x] Centralize format utilities (`fmtPrice`, `fmtMoney`, `plClass`, `side`, `sideClass`) → `src/lib/utils.ts`
+
+## Verify Parity (from trader/ui comparison 2026-06-17)
+
+- [ ] **Backtest compare mode** — trader supports selecting 2 backtests for side-by-side metric comparison; confirm `BacktestsPage` implements this
+- [ ] **Order preview before placement** — trader shows estimated units, entry, stop, and risk before confirming; confirm `TradesPage` has equivalent pre-confirmation preview
