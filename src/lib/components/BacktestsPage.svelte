@@ -208,7 +208,7 @@
 
   // ── Run panel ─────────────────────────────────────────────────────────────
 
-  let runInput   = $state('testdata/configs/eurusd-h1-2024-ema-cross.yml');
+  let runInput   = $state('');
   let runLoading = $state(false);
   let runError   = $state('');
   let runResults = $state<BacktestSummary[]>([]);
