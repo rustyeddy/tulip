@@ -28,30 +28,46 @@
   let trades       = $state<BacktestReportTrade[]>([]);
   let dataLoading  = $state(false);
   let dataError    = $state('');
+  let loadRequestId = 0;
 
   async function loadSelected(name: string) {
+    const requestId = ++loadRequestId;
+
     if (!name) {
+      dataError = '';
+      dataLoading = false;
       detail  = null;
       candles = [];
       trades  = [];
       return;
     }
+
     dataLoading = true;
     dataError   = '';
+    detail      = null;
+    candles     = [];
+    trades      = [];
+
     try {
       const [det, cands] = await Promise.all([
         api.backtestGet(name),
         api.backtestCandles(name),
       ]);
+
+      if (requestId !== loadRequestId) return;
+
       detail  = det;
       candles = cands.bars ?? [];
       trades  = det.trade_details ?? [];
     } catch (e) {
+      if (requestId !== loadRequestId) return;
+
       dataError = e instanceof Error ? e.message : 'Failed to load chart data';
       detail    = null;
       candles   = [];
       trades    = [];
     } finally {
+      if (requestId !== loadRequestId) return;
       dataLoading = false;
     }
   }
@@ -73,7 +89,7 @@
     {:else if listError}
       <span class="err">{listError}</span>
     {:else}
-      <select class="bt-select" value={selectedName} onchange={onSelect}>
+      <select class="bt-select" value={selectedName} onchange={onSelect} aria-label="Select backtest">
         <option value="">— select a backtest —</option>
         {#each summaries as s}
           <option value={s.name}>
@@ -94,10 +110,10 @@
     <div class="stats-bar">
       <span class="stat">Balance: <strong>${detail.end_balance?.toFixed(2)}</strong></span>
       <span class="stat">Net P/L:
-        <strong class="{detail.net_pl >= 0 ? 'pos' : 'neg'}">${detail.net_pl?.toFixed(2)}</strong>
+        <strong class={detail.net_pl >= 0 ? 'pos' : 'neg'}>${detail.net_pl?.toFixed(2)}</strong>
       </span>
       <span class="stat">Return:
-        <strong class="{detail.return_pct >= 0 ? 'pos' : 'neg'}">{detail.return_pct?.toFixed(2)}%</strong>
+        <strong class={detail.return_pct >= 0 ? 'pos' : 'neg'}>{detail.return_pct?.toFixed(2)}%</strong>
       </span>
       <span class="stat">Trades: <strong>{detail.trades}</strong></span>
       <span class="stat">Win rate: <strong>{detail.win_rate?.toFixed(1)}%</strong></span>
