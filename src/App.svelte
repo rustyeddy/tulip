@@ -7,6 +7,7 @@
   import ChartsPage from './lib/components/ChartsPage.svelte';
   import BacktestsPage from './lib/components/BacktestsPage.svelte';
   import ReplayPage from './lib/components/ReplayPage.svelte';
+  import DashboardPage from './lib/components/DashboardPage.svelte';
   import { navState } from './lib/stores/nav.svelte';
 
   let liveTradeRef: ReturnType<typeof LiveTradePage> | undefined;
@@ -36,7 +37,9 @@
     <Topbar onRefresh={handleRefresh} />
 
     <div class="content">
-      {#if navState.currentPage === 'live-trade'}
+      {#if navState.currentPage === 'dashboard'}
+        <DashboardPage />
+      {:else if navState.currentPage === 'live-trade'}
         <LiveTradePage bind:this={liveTradeRef} />
       {:else if navState.currentPage === 'trades'}
         <TradesPage />
