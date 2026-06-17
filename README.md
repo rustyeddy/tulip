@@ -6,6 +6,7 @@ Svelte 5 + TypeScript + Vite. Dark-themed trading UI backed by the trader daemon
 
 | Nav key | Status | Description |
 |---|---|---|
+| `dashboard` | ✅ | Live account status, NAV sparkline, daily P/L, open trades, recent closed trades, SSE event log |
 | `live-trade` | ✅ | Portfolio summary, price chart with entry/SL/TP levels, order panel |
 | `trades` | ✅ | Open trades table, update stop/take, close trade, new order form |
 | `chart` | ✅ | Pick any backtest → candlestick chart with trade entry/exit markers and stats bar |
@@ -53,6 +54,8 @@ tulip/
             ├── ChartsPage.svelte       # backtest chart viewer
             ├── BacktestsPage.svelte    # backtest list, detail, compare, run
             ├── ReplayPage.svelte       # strategy replay with signal overlay chart
+            ├── DashboardPage.svelte    # live account + SSE event log + trades summary
+            ├── EquitySparkline.svelte  # SVG NAV history sparkline with gradient fill
             └── PlaceholderPage.svelte
 ```
 

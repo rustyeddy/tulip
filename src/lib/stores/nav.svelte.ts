@@ -17,7 +17,8 @@ export interface NavPage {
 }
 
 export const PAGES: NavPage[] = [
-  { key: 'live-trade', label: 'Live trade', icon: 'ti-player-play', section: 'Trading', live: true },
+  { key: 'dashboard',  label: 'Dashboard',  icon: 'ti-layout-dashboard', section: 'Trading', live: true },
+  { key: 'live-trade', label: 'Live trade', icon: 'ti-player-play', section: 'Trading' },
   { key: 'trades',     label: 'Trades',     icon: 'ti-list',        section: 'Trading' },
   { key: 'chart',      label: 'Chart',      icon: 'ti-chart-line',  section: 'Trading' },
   { key: 'backtests',  label: 'Backtests',  icon: 'ti-flask',       section: 'Trading', badge: 4 },
@@ -36,7 +37,7 @@ export const PAGE_TITLES: Record<string, string> = Object.fromEntries(
 
 function readInitialPage(): string {
   const hash = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
-  return PAGE_TITLES[hash] ? hash : 'live-trade';
+  return PAGE_TITLES[hash] ? hash : 'dashboard';
 }
 
 export const navState = $state<{ currentPage: string }>({
