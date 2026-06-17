@@ -1,6 +1,20 @@
 # Tulip — trader platform front end
 
-Svelte 5 + TypeScript + Vite. Dark-themed trading UI: live trade, chart, backtests, strategies, data, account, admin.
+Svelte 5 + TypeScript + Vite. Dark-themed trading UI backed by the trader daemon REST/SSE API.
+
+## Implemented pages
+
+| Nav key | Status | Description |
+|---|---|---|
+| `live-trade` | ✅ | Portfolio summary, price chart with entry/SL/TP levels, order panel |
+| `trades` | ✅ | Open trades table, update stop/take, close trade, new order form |
+| `chart` | ✅ | Pick any backtest → candlestick chart with trade entry/exit markers and stats bar |
+| `backtests` | ✅ | Sortable backtest list, detail panel, paginated trade list, A/B compare, run panel, `.org` download |
+| `replay` | 🔲 | Strategy replay simulation (planned) |
+| `strategies` | 🔲 | Placeholder |
+| `data` | 🔲 | Placeholder |
+| `account` | 🔲 | Placeholder |
+| `admin` | 🔲 | Placeholder |
 
 ## Structure
 
@@ -28,15 +42,29 @@ tulip/
             ├── Sidebar.svelte
             ├── Topbar.svelte
             ├── MetricCard.svelte
-            ├── PriceChart.svelte    # canvas candlesticks + entry/SL/TP lines
+            ├── PriceChart.svelte       # canvas candlesticks + entry/SL/TP lines (live trade)
+            ├── CandleChart.svelte      # lightweight-charts OHLC with trade/signal markers
             ├── OrderPanel.svelte
             ├── PositionsList.svelte
             ├── PortfolioSummary.svelte
+            ├── ConfirmDialog.svelte
             ├── LiveTradePage.svelte
+            ├── TradesPage.svelte       # open trades + order management
+            ├── ChartsPage.svelte       # backtest chart viewer
+            ├── BacktestsPage.svelte    # backtest list, detail, compare, run
             └── PlaceholderPage.svelte
 ```
 
 Every `.svelte` file uses `<script lang="ts">`. Store files use the `.svelte.ts` extension (Svelte 5's convention for `.ts` modules that use runes like `$state` outside of components).
+
+## Key dependencies
+
+| Package | Purpose |
+|---|---|
+| `svelte@^5` | UI framework (runes mode) |
+| `vite` + `@sveltejs/vite-plugin-svelte` | Dev server and bundler |
+| `lightweight-charts@^5` | Professional OHLC candlestick charting (used by `CandleChart`) |
+| `@tabler/icons-webfont` | Icon set (loaded via CDN in `app.css`) |
 
 ## Local development
 
