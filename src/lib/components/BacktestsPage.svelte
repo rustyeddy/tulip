@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import { api, type BacktestSummary, type BacktestReportTrade } from '../api';
 
+  const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+
   // ── Formatting helpers ────────────────────────────────────────────────────
 
   const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 });
@@ -73,12 +75,25 @@
     return sortAsc ? '↑' : '↓';
   }
 
+  function sortState(key: keyof BacktestSummary) {
+    if (sortKey !== key) return 'none';
+    return sortAsc ? 'ascending' : 'descending';
+  }
+
+  function activateOnKey(event: KeyboardEvent, action: () => void) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      action();
+    }
+  }
+
   // ── Detail panel ──────────────────────────────────────────────────────────
 
   let selectedName  = $state('');
   let detail        = $state<BacktestSummary | null>(null);
   let detailLoading = $state(false);
   let detailError   = $state('');
+  let detailRequestId = 0;
 
   let tradesPage = $state(0);
   const PAGE_SIZE = 25;
@@ -86,18 +101,40 @@
   let totalPages = $derived(Math.ceil(trades.length / PAGE_SIZE));
   let tradePage  = $derived(trades.slice(tradesPage * PAGE_SIZE, (tradesPage + 1) * PAGE_SIZE));
 
-  async function selectRow(name: string) {
-    if (selectedName === name) { selectedName = ''; detail = null; return; }
-    selectedName  = name;
+  function clearDetail() {
+    detailRequestId += 1;
+    selectedName  = '';
+    detail        = null;
+    detailError   = '';
+    detailLoading = false;
     tradesPage    = 0;
-    detailLoading = true;
+  }
+
+  async function selectRow(name: string) {
+    const nextSelectedName = selectedName === name ? '' : name;
+    const requestId = ++detailRequestId;
+
+    selectedName  = nextSelectedName;
+    tradesPage    = 0;
     detailError   = '';
     detail        = null;
+
+    if (!nextSelectedName) {
+      detailLoading = false;
+      return;
+    }
+
+    detailLoading = true;
+
     try {
-      detail = await api.backtestGet(name);
+      const nextDetail = await api.backtestGet(nextSelectedName);
+      if (requestId !== detailRequestId) return;
+      detail = nextDetail;
     } catch (e) {
+      if (requestId !== detailRequestId) return;
       detailError = e instanceof Error ? e.message : 'Failed to load detail';
     } finally {
+      if (requestId !== detailRequestId) return;
       detailLoading = false;
     }
   }
@@ -110,29 +147,50 @@
   let cmpDataA    = $state<BacktestSummary | null>(null);
   let cmpDataB    = $state<BacktestSummary | null>(null);
   let cmpLoading  = $state(false);
+  let cmpError    = $state('');
+  let compareRequestId = 0;
 
   async function loadCompare() {
-    if (!compareA || !compareB) return;
+    const requestId = ++compareRequestId;
+
+    cmpDataA = null;
+    cmpDataB = null;
+    cmpError = '';
+
+    if (!compareA || !compareB) {
+      cmpLoading = false;
+      return;
+    }
+
     cmpLoading = true;
     try {
-      [cmpDataA, cmpDataB] = await Promise.all([
+      const [nextA, nextB] = await Promise.all([
         api.backtestGet(compareA),
         api.backtestGet(compareB),
       ]);
+      if (requestId !== compareRequestId) return;
+      cmpDataA = nextA;
+      cmpDataB = nextB;
+    } catch (e) {
+      if (requestId !== compareRequestId) return;
+      cmpError = e instanceof Error ? e.message : 'Failed to load comparison';
     } finally {
+      if (requestId !== compareRequestId) return;
       cmpLoading = false;
     }
   }
 
   function onCompareAChange(e: Event) {
     compareA = (e.target as HTMLSelectElement).value;
-    cmpDataA = null; cmpDataB = null;
     loadCompare();
   }
   function onCompareBChange(e: Event) {
     compareB = (e.target as HTMLSelectElement).value;
-    cmpDataA = null; cmpDataB = null;
     loadCompare();
+  }
+
+  function reportHref(name: string) {
+    return `${API_BASE}/api/v1/backtests/${encodeURIComponent(name)}/org`;
   }
 
   const CMP_ROWS: [string, (s: BacktestSummary) => string][] = [
@@ -208,6 +266,8 @@
 
       {#if cmpLoading}
         <p class="hint">Loading…</p>
+      {:else if cmpError}
+        <p class="err small">{cmpError}</p>
       {:else if cmpDataA && cmpDataB}
         <table class="cmp-table">
           <thead>
@@ -263,8 +323,12 @@
                 {#each COLS as [key, label]}
                   <th
                     class="{key === 'name' ? 'left' : 'right'} sortable"
-                    onclick={() => setSort(key)}
-                  >{label} <span class="sort-icon">{sortIcon(key)}</span></th>
+                    aria-sort={sortState(key)}
+                  >
+                    <button class="sort-button" type="button" onclick={() => setSort(key)}>
+                      {label} <span class="sort-icon">{sortIcon(key)}</span>
+                    </button>
+                  </th>
                 {/each}
               </tr>
             </thead>
@@ -272,7 +336,10 @@
               {#each sorted as s (s.name)}
                 <tr
                   class="bt-row {selectedName === s.name ? 'selected' : ''}"
+                  tabindex="0"
+                  aria-selected={selectedName === s.name}
                   onclick={() => selectRow(s.name)}
+                  onkeydown={(event) => activateOnKey(event, () => selectRow(s.name))}
                 >
                   <td class="mono small muted name-cell">{s.name}</td>
                   <td class="bold">{s.instrument}</td>
@@ -297,7 +364,7 @@
 
         <div class="detail-header">
           <span class="detail-name mono small">{selectedName}</span>
-          <button class="close-btn" onclick={() => { selectedName = ''; detail = null; }}>✕</button>
+          <button class="close-btn" onclick={clearDetail}>✕</button>
         </div>
 
         {#if detailLoading}
@@ -325,8 +392,8 @@
           </div>
 
           <a
-            href="/api/v1/backtests/{encodeURIComponent(detail.name)}/org"
-            download="{detail.name}.org"
+            href={reportHref(detail.name)}
+            download={`${detail.name}.org`}
             class="download-link"
           >Download .org report</a>
 
@@ -545,6 +612,25 @@
   th.left  { text-align: left; }
   th.right { text-align: right; }
 
+  .sort-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: inherit;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+  }
+  th.left .sort-button  { justify-content: flex-start; }
+  th.right .sort-button { justify-content: flex-end; }
+  .sort-button:hover,
+  .sort-button:focus-visible { color: var(--text-primary); }
+
   .sort-icon { color: var(--text-faint); }
 
   td { padding: 7px 10px; white-space: nowrap; }
@@ -556,6 +642,7 @@
     transition: background 0.1s;
   }
   .bt-row:hover    { background: var(--bg-hover); }
+  .bt-row:focus-visible { outline: 1px solid var(--purple-mid); outline-offset: -1px; }
   .bt-row.selected { background: var(--purple-tint); }
   .bt-row:last-child { border-bottom: none; }
 
