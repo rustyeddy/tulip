@@ -10,7 +10,7 @@ Svelte 5 + TypeScript + Vite. Dark-themed trading UI backed by the trader daemon
 | `trades` | ✅ | Open trades table, update stop/take, close trade, new order form |
 | `chart` | ✅ | Pick any backtest → candlestick chart with trade entry/exit markers and stats bar |
 | `backtests` | ✅ | Sortable backtest list, detail panel, paginated trade list, A/B compare, run panel, `.org` download |
-| `replay` | 🔲 | Strategy replay simulation (planned) |
+| `replay` | ✅ | Strategy replay: instrument/TF/date/strategy/exit/regime controls → candlestick chart with signal overlays |
 | `strategies` | 🔲 | Placeholder |
 | `data` | 🔲 | Placeholder |
 | `account` | 🔲 | Placeholder |
@@ -52,6 +52,7 @@ tulip/
             ├── TradesPage.svelte       # open trades + order management
             ├── ChartsPage.svelte       # backtest chart viewer
             ├── BacktestsPage.svelte    # backtest list, detail, compare, run
+            ├── ReplayPage.svelte       # strategy replay with signal overlay chart
             └── PlaceholderPage.svelte
 ```
 

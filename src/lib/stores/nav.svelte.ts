@@ -21,6 +21,7 @@ export const PAGES: NavPage[] = [
   { key: 'trades',     label: 'Trades',     icon: 'ti-list',        section: 'Trading' },
   { key: 'chart',      label: 'Chart',      icon: 'ti-chart-line',  section: 'Trading' },
   { key: 'backtests',  label: 'Backtests',  icon: 'ti-flask',       section: 'Trading', badge: 4 },
+  { key: 'replay',     label: 'Replay',     icon: 'ti-player-play-filled', section: 'Trading' },
   { key: 'strategies', label: 'Strategies', icon: 'ti-code',        section: 'Setup' },
   { key: 'data',       label: 'Data',       icon: 'ti-database',    section: 'Setup' },
   { key: 'account',    label: 'Account',    icon: 'ti-user-circle', section: 'System' },
