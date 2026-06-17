@@ -5,6 +5,7 @@
   import TradesPage from './lib/components/TradesPage.svelte';
   import PlaceholderPage from './lib/components/PlaceholderPage.svelte';
   import ChartsPage from './lib/components/ChartsPage.svelte';
+  import BacktestsPage from './lib/components/BacktestsPage.svelte';
   import { navState } from './lib/stores/nav.svelte';
 
   let liveTradeRef: ReturnType<typeof LiveTradePage> | undefined;
@@ -20,7 +21,6 @@
   }
 
   const placeholders: Record<string, PlaceholderDef> = {
-    backtests:   { icon: 'ti-flask',       title: 'Backtests',  subtitle: 'Strategy backtesting results' },
     strategies:  { icon: 'ti-code',        title: 'Strategies', subtitle: 'Strategy builder and editor' },
     data:        { icon: 'ti-database',    title: 'Data',       subtitle: 'Data feeds and sources' },
     account:     { icon: 'ti-user-circle', title: 'Account',    subtitle: 'Broker connections and account settings' },
@@ -41,6 +41,8 @@
         <TradesPage />
       {:else if navState.currentPage === 'chart'}
         <ChartsPage />
+      {:else if navState.currentPage === 'backtests'}
+        <BacktestsPage />
       {:else if placeholders[navState.currentPage]}
         {@const p = placeholders[navState.currentPage]}
         <PlaceholderPage icon={p.icon} title={p.title} subtitle={p.subtitle} />
