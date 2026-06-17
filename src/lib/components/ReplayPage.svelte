@@ -35,8 +35,16 @@
 
   // ── Form state ────────────────────────────────────────────────────────────
 
-  const today   = new Date().toISOString().slice(0, 10);
-  const sixBack = new Date(Date.now() - 180 * 86_400_000).toISOString().slice(0, 10);
+  // Format date in local timezone for <input type="date"> (YYYY-MM-DD)
+  function toLocalDateString(date: Date): string {
+    const year  = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day   = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  const today   = toLocalDateString(new Date());
+  const sixBack = toLocalDateString(new Date(Date.now() - 180 * 86_400_000));
 
   let instrument   = $state('EURUSD');
   let timeframe    = $state('H1');
