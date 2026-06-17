@@ -67,7 +67,7 @@
   });
 
   function setSort(key: keyof BacktestSummary) {
-    if (sortKey === key) { sortAsc = !sortAsc; } else { sortKey = key; sortAsc = false; }
+    if (sortKey === key) { sortAsc = !sortAsc; } else { sortKey = key; sortAsc = true; }
   }
 
   function sortIcon(key: keyof BacktestSummary) {
