@@ -6,6 +6,7 @@
   import PlaceholderPage from './lib/components/PlaceholderPage.svelte';
   import ChartsPage from './lib/components/ChartsPage.svelte';
   import BacktestsPage from './lib/components/BacktestsPage.svelte';
+  import ReplayPage from './lib/components/ReplayPage.svelte';
   import { navState } from './lib/stores/nav.svelte';
 
   let liveTradeRef: ReturnType<typeof LiveTradePage> | undefined;
@@ -43,6 +44,8 @@
         <ChartsPage />
       {:else if navState.currentPage === 'backtests'}
         <BacktestsPage />
+      {:else if navState.currentPage === 'replay'}
+        <ReplayPage />
       {:else if placeholders[navState.currentPage]}
         {@const p = placeholders[navState.currentPage]}
         <PlaceholderPage icon={p.icon} title={p.title} subtitle={p.subtitle} />
