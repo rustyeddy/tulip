@@ -45,7 +45,7 @@
     if (!candles.length) return;
 
     const prices = candles.flatMap((c) => [c.high, c.low]);
-    const allPrices = [...prices, orderState.entry, orderState.stopLoss, orderState.takeProfit];
+    const allPrices = [...prices];
     const minP = Math.min(...allPrices) - 0.5;
     const maxP = Math.max(...allPrices) + 0.5;
 
@@ -136,9 +136,7 @@
       ctx.fillText(label + ' $' + price.toFixed(2), W - PADDING.right + 4, y + 3);
     }
 
-    drawLevel(orderState.entry, COLORS.entryLine, COLORS.entryLabel, 'Entry');
-    drawLevel(orderState.stopLoss, COLORS.slLine, COLORS.slLabel, 'SL');
-    drawLevel(orderState.takeProfit, COLORS.tpLine, COLORS.tpLabel, 'TP');
+    // Trade levels drawn when positions are wired in
 
     // Current price dot
     const last = candles[candles.length - 1];
@@ -176,14 +174,7 @@
     candles = generateCandles(26);
   }
 
-  // Redraw whenever order levels or candle data change
-  $effect(() => {
-    orderState.entry;
-    orderState.stopLoss;
-    orderState.takeProfit;
-    candles;
-    draw();
-  });
+  $effect(() => { candles; draw(); });
 
   onMount(() => {
     resize();
@@ -198,14 +189,10 @@
     <input
       type="text"
       class="symbol-input"
-      bind:value={orderState.symbol}
-      aria-label="Symbol search"
-      placeholder="Symbol…"
+      bind:value={orderState.instrument}
+      aria-label="Instrument"
+      placeholder="EUR_USD"
     />
-    <span class="current-price">
-      ${orderState.symbolPrice.toFixed(2)}
-      <span class="price-change positive">+1.2%</span>
-    </span>
     <div class="timeframe-pills" role="group" aria-label="Timeframe">
       {#each timeframes as tf}
         <button class="tf-pill" class:active={activeTf === tf} onclick={() => selectTimeframe(tf)}>
@@ -215,7 +202,7 @@
     </div>
   </div>
   <div class="chart-area" bind:this={containerEl}>
-    <canvas bind:this={canvasEl} aria-label="{orderState.symbol} intraday chart"></canvas>
+    <canvas bind:this={canvasEl} aria-label="{orderState.instrument} chart"></canvas>
   </div>
 </div>
 
@@ -253,16 +240,6 @@
   }
 
   .symbol-input::placeholder { color: var(--text-faint); }
-
-  .current-price {
-    font-size: 13px;
-    color: var(--purple-bright);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .price-change { font-size: 12px; }
 
   .timeframe-pills {
     display: flex;

@@ -1,30 +1,44 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { orderState, riskReward, riskDollar } from '../stores/order.svelte';
+  import { orderState } from '../stores/order.svelte';
+  import { api } from '../api';
 
   interface Props {
     children?: Snippet;
+    accountId: string;
+    nav?: number;
   }
 
-  let { children }: Props = $props();
+  let { children, accountId, nav = 0 }: Props = $props();
 
-  interface Toast {
-    message: string;
-    type: 'long' | 'short';
-  }
-
-  let toast = $state<Toast | null>(null);
+  let busy  = $state(false);
+  let toast = $state<{ message: string; tone: 'long' | 'short' | 'error' } | null>(null);
   let toastTimer: ReturnType<typeof setTimeout>;
 
-  function fireOrder(type: 'long' | 'short'): void {
-    const qty = orderState.qty;
-    const entry = orderState.entry.toFixed(2);
-    const sl = orderState.stopLoss.toFixed(2);
-    const label = type === 'long' ? 'Long' : 'Short';
+  let riskDollar = $derived(
+    nav > 0 ? (nav * orderState.risk_pct / 100) : 0
+  );
 
+  async function fireOrder(side: 'long' | 'short'): Promise<void> {
+    if (!accountId || busy) return;
+    busy = true;
     clearTimeout(toastTimer);
-    toast = { message: `${label} ${qty} ${orderState.symbol} @ $${entry}  |  SL $${sl}`, type };
-    toastTimer = setTimeout(() => (toast = null), 3000);
+    toast = null;
+    try {
+      await api.placeTrade(accountId, {
+        instrument: orderState.instrument,
+        side,
+        risk_pct: orderState.risk_pct,
+        stop_pips: orderState.stop_pips,
+        confirm: true,
+      });
+      toast = { message: `${side === 'long' ? 'Long' : 'Short'} ${orderState.instrument} — order placed`, tone: side };
+    } catch (e) {
+      toast = { message: e instanceof Error ? e.message : 'Order failed', tone: 'error' };
+    } finally {
+      busy = false;
+      toastTimer = setTimeout(() => (toast = null), 4000);
+    }
   }
 </script>
 
@@ -32,85 +46,64 @@
   <div class="panel-section">
     <h2 class="panel-title">Order entry</h2>
 
-    <label class="field-label" for="order-symbol">Symbol</label>
+    <label class="field-label" for="order-instrument">Instrument</label>
     <div class="input-row">
       <i class="ti ti-search" aria-hidden="true"></i>
-      <span class="input-display">{orderState.symbol}</span>
-      <span class="input-value">${orderState.symbolPrice.toFixed(2)}</span>
+      <input
+        id="order-instrument"
+        type="text"
+        class="instrument-input"
+        bind:value={orderState.instrument}
+        placeholder="EUR_USD"
+        aria-label="Instrument"
+      />
     </div>
 
-    <label class="field-label" for="order-qty">Quantity</label>
+    <label class="field-label" for="order-risk">Risk %</label>
     <div class="input-row">
-      <i class="ti ti-stack-2" aria-hidden="true"></i>
-      <span class="input-display">Shares</span>
+      <i class="ti ti-percentage" aria-hidden="true"></i>
+      <span class="input-display">Account risk</span>
       <input
-        id="order-qty"
+        id="order-risk"
         type="number"
         class="inline-number"
-        bind:value={orderState.qty}
-        min="1"
-        aria-label="Quantity"
+        bind:value={orderState.risk_pct}
+        step="0.1"
+        min="0.1"
+        max="5"
+        aria-label="Risk percent"
       />
     </div>
 
-    <label class="field-label" for="order-entry">Entry price</label>
-    <div class="input-row entry-row">
-      <i class="ti ti-arrow-up-right" aria-hidden="true"></i>
-      <span class="input-display">Limit</span>
-      <input
-        id="order-entry"
-        type="number"
-        class="inline-number"
-        bind:value={orderState.entry}
-        step="0.01"
-        aria-label="Entry price"
-      />
-    </div>
-
-    <label class="field-label" for="order-sl">Stop loss</label>
+    <label class="field-label" for="order-stop">Stop pips</label>
     <div class="input-row sl-row">
       <i class="ti ti-shield-x" aria-hidden="true"></i>
-      <span class="input-display">Hard stop</span>
+      <span class="input-display">Stop distance</span>
       <input
-        id="order-sl"
+        id="order-stop"
         type="number"
         class="inline-number"
-        bind:value={orderState.stopLoss}
-        step="0.01"
-        aria-label="Stop loss price"
+        bind:value={orderState.stop_pips}
+        step="1"
+        min="1"
+        aria-label="Stop pips"
       />
     </div>
 
-    <label class="field-label" for="order-tp">Take profit</label>
-    <div class="input-row tp-row">
-      <i class="ti ti-target" aria-hidden="true"></i>
-      <span class="input-display">Target</span>
-      <input
-        id="order-tp"
-        type="number"
-        class="inline-number"
-        bind:value={orderState.takeProfit}
-        step="0.01"
-        aria-label="Take profit price"
-      />
-    </div>
-
-    <div class="rr-box">
-      <span class="rr-label">Risk / reward</span>
-      <span class="rr-value">1 : {riskReward.value}</span>
-    </div>
-    <div class="rr-box">
-      <span class="rr-label">Risk $</span>
-      <span class="rr-value negative">${riskDollar.value.toLocaleString()}</span>
-    </div>
+    {#if nav > 0}
+      <div class="rr-box">
+        <span class="rr-label">Risk $</span>
+        <span class="rr-value negative">${riskDollar.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
+      </div>
+    {/if}
   </div>
 
   <div class="action-buttons">
-    <button class="go-long" onclick={() => fireOrder('long')}>
+    <button class="go-long" onclick={() => fireOrder('long')} disabled={busy || !accountId}>
       <i class="ti ti-trending-up" aria-hidden="true"></i>
       Long
     </button>
-    <button class="go-short" onclick={() => fireOrder('short')}>
+    <button class="go-short" onclick={() => fireOrder('short')} disabled={busy || !accountId}>
       <i class="ti ti-trending-down" aria-hidden="true"></i>
       Short
     </button>
@@ -120,7 +113,7 @@
 </aside>
 
 {#if toast}
-  <div class="toast" class:long={toast.type === 'long'} class:short={toast.type === 'short'}>
+  <div class="toast" class:long={toast.tone === 'long'} class:short={toast.tone === 'short'} class:error={toast.tone === 'error'}>
     {toast.message}
   </div>
 {/if}
@@ -144,7 +137,7 @@
   }
 
   .panel-title {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -181,11 +174,18 @@
     flex: 1;
   }
 
-  .input-value {
+  .instrument-input {
     font-size: 13px;
     font-weight: 500;
     color: var(--text-primary);
+    flex: 1;
+    text-transform: uppercase;
+    background: none;
+    border: none;
+    outline: none;
   }
+
+  .instrument-input::placeholder { color: var(--text-faint); }
 
   .inline-number {
     font-size: 13px;
@@ -193,14 +193,10 @@
     color: var(--text-primary);
     width: 60px;
     text-align: right;
+    background: none;
+    border: none;
+    outline: none;
   }
-
-  .entry-row {
-    background: #0A1F18;
-    border-color: var(--green-border);
-  }
-  .entry-row > i { color: var(--green-mid); }
-  .entry-row .inline-number { color: var(--green-bright); }
 
   .sl-row {
     background: var(--red-tint);
@@ -208,13 +204,6 @@
   }
   .sl-row > i { color: var(--red-mid); }
   .sl-row .inline-number { color: var(--red-bright); }
-
-  .tp-row {
-    background: #111A16;
-    border-color: var(--green-border);
-  }
-  .tp-row > i { color: var(--green-dark); }
-  .tp-row .inline-number { color: var(--green-bright); }
 
   .rr-box {
     background: var(--bg-card);
@@ -227,7 +216,8 @@
   }
 
   .rr-label { font-size: 11px; color: var(--text-hint); }
-  .rr-value { font-size: 14px; font-weight: 500; color: var(--purple-bright); }
+  .rr-value { font-size: 14px; font-weight: 500; }
+  .negative { color: var(--red-bright); }
 
   .action-buttons {
     display: grid;
@@ -250,17 +240,18 @@
     transition: opacity 0.1s;
   }
 
-  .go-long:hover, .go-short:hover { opacity: 0.85; }
-  .go-long:active, .go-short:active { transform: scale(0.98); }
+  .go-long:disabled, .go-short:disabled { opacity: 0.4; cursor: not-allowed; }
+  .go-long:not(:disabled):hover, .go-short:not(:disabled):hover { opacity: 0.85; }
+  .go-long:not(:disabled):active, .go-short:not(:disabled):active { transform: scale(0.98); }
 
   .go-long {
-    background: #0F3328;
+    background: var(--green-tint);
     color: var(--green-bright);
     border: 0.5px solid var(--green-dark);
   }
 
   .go-short {
-    background: #280F0F;
+    background: var(--red-tint);
     color: var(--red-bright);
     border: 0.5px solid var(--red-dark);
   }
@@ -277,17 +268,11 @@
     font-size: 13px;
     font-weight: 500;
     z-index: 9999;
+    max-width: 80vw;
+    text-align: center;
   }
 
-  .toast.long {
-    background: #0F3328;
-    color: #5DCAA5;
-    border: 0.5px solid #0F6E56;
-  }
-
-  .toast.short {
-    background: #280F0F;
-    color: #F09595;
-    border: 0.5px solid #791F1F;
-  }
+  .toast.long  { background: var(--green-tint); color: var(--green-bright); border: 0.5px solid var(--green-dark); }
+  .toast.short { background: var(--red-tint);   color: var(--red-bright);   border: 0.5px solid var(--red-dark); }
+  .toast.error { background: var(--bg-card);    color: var(--amber);        border: 0.5px solid var(--amber); }
 </style>
