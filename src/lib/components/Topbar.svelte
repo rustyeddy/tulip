@@ -1,5 +1,6 @@
 <script lang="ts">
   import { navState, PAGE_TITLES, accountState, cycleAccount, activeAccountLabel } from '../stores/nav.svelte';
+  import { themeStore } from '../stores/theme.svelte';
 
   interface Props {
     onRefresh: () => void;
@@ -18,6 +19,9 @@
     </button>
     <button class="icon-btn" onclick={onRefresh} aria-label="Refresh data">
       <i class="ti ti-refresh" aria-hidden="true"></i>
+    </button>
+    <button class="icon-btn" onclick={themeStore.toggle} aria-label="Toggle theme">
+      <i class="ti {themeStore.current === 'dark' ? 'ti-sun' : 'ti-moon'}" aria-hidden="true"></i>
     </button>
     <button class="icon-btn" aria-label="Alerts">
       <i class="ti ti-bell" aria-hidden="true"></i>

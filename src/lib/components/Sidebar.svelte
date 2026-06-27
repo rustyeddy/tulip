@@ -104,7 +104,7 @@
   }
 
   .logo-sub {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-faint);
     margin-top: 1px;
   }
@@ -119,7 +119,7 @@
   }
 
   .nav-section-label {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--text-faint);
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -134,7 +134,7 @@
     padding: 8px 10px;
     border-radius: var(--radius-md);
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 14px;
     transition: background 0.1s, color 0.1s;
   }
 
@@ -159,7 +159,7 @@
 
   .nav-badge {
     margin-left: auto;
-    font-size: 10px;
+    font-size: 12px;
     background: var(--purple-dark);
     color: var(--purple-bright);
     border-radius: 20px;

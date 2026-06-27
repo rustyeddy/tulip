@@ -32,18 +32,18 @@
   }
 
   .metric-label {
-    font-size: 11px;
+    font-size: 13px;
     color: var(--text-hint);
   }
 
   .metric-value {
-    font-size: 20px;
+    font-size: 26px;
     font-weight: 500;
     color: var(--text-primary);
     line-height: 1.2;
   }
 
   .metric-delta {
-    font-size: 11px;
+    font-size: 13px;
   }
 </style>

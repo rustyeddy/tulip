@@ -6,41 +6,46 @@
   padding: 0;
 }
 
+/* ── Dark theme (Railscasts-inspired) ──────────────────────────── */
 :root {
-  --bg-app:       #181A1F;
-  --bg-sidebar:   #13151A;
-  --bg-card:      #1A1C22;
-  --bg-hover:     #1E2028;
-  --bg-active:    #1E1D3A;
+  --bg-app:       #1E1C1A;
+  --bg-sidebar:   #141210;
+  --bg-card:      #302C28;
+  --bg-hover:     #3A3530;
+  --bg-active:    #3A2C14;
 
-  --border:       #2A2D35;
-  --border-light: #1E2028;
+  --border:       #3D3835;
+  --border-light: #2D2A27;
 
-  --text-primary:   #E8E9EC;
-  --text-secondary: #C8CAD4;
-  --text-muted:     #7A7F90;
-  --text-faint:     #4A4E5C;
-  --text-hint:      #5A5E6B;
+  --text-primary:   #E6E1DC;
+  --text-secondary: #CEC9C3;
+  --text-muted:     #9C9590;
+  --text-faint:     #6A6560;
+  --text-hint:      #7A7570;
 
-  --purple-bright:  #AFA9EC;
-  --purple-mid:     #7F77DD;
-  --purple-strong:  #534AB7;
-  --purple-dark:    #26215C;
-  --purple-tint:    #1E1D3A;
+  /* Orange accent — Railscasts keyword color */
+  --purple-bright:  #E8A855;
+  --purple-mid:     #CC7833;
+  --purple-strong:  #A86028;
+  --purple-dark:    #3A2208;
+  --purple-tint:    #2A1A08;
 
-  --green-bright:   #5DCAA5;
-  --green-mid:      #1D9E75;
-  --green-dark:     #0F6E56;
-  --green-tint:     #0A1F18;
-  --green-border:   #0F3328;
+  /* Green — Railscasts string color */
+  --green-bright:   #B8D470;
+  --green-mid:      #8AAA40;
+  --green-dark:     #5A7020;
+  --green-tint:     #1A2508;
+  --green-border:   #2A3A12;
 
-  --red-bright:     #F09595;
-  --red-mid:        #E24B4A;
-  --red-dark:       #791F1F;
-  --red-tint:       #200D0D;
-  --red-border:     #3A1A1A;
+  /* Red — Railscasts type/error color */
+  --red-bright:     #E87070;
+  --red-mid:        #DA4939;
+  --red-dark:       #8B2020;
+  --red-tint:       #250D0D;
+  --red-border:     #3A1515;
 
-  --amber:          #EF9F27;
+  /* Amber — Railscasts function color */
+  --amber:          #FFC66D;
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -54,12 +59,50 @@
   --font: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
 }
 
+/* ── Light theme (warm paper) ──────────────────────────────────── */
+[data-theme="light"] {
+  --bg-app:       #F8F4EC;
+  --bg-sidebar:   #EFE9DF;
+  --bg-card:      #FDFAF4;
+  --bg-hover:     #EFE9DF;
+  --bg-active:    #FAE8CC;
+
+  --border:       #D8CEBA;
+  --border-light: #E8E2D8;
+
+  --text-primary:   #252220;
+  --text-secondary: #3A3530;
+  --text-muted:     #6B6560;
+  --text-faint:     #9C9590;
+  --text-hint:      #7A7570;
+
+  --purple-bright:  #CC7833;
+  --purple-mid:     #A86028;
+  --purple-strong:  #CC7833;
+  --purple-dark:    #FAE8CC;
+  --purple-tint:    #FDF5E8;
+
+  --green-bright:   #5A8A20;
+  --green-mid:      #4A7018;
+  --green-dark:     #355010;
+  --green-tint:     #EAF5DC;
+  --green-border:   #C0D8A0;
+
+  --red-bright:     #C02828;
+  --red-mid:        #A82020;
+  --red-dark:       #781818;
+  --red-tint:       #FAE8E8;
+  --red-border:     #E8C0C0;
+
+  --amber:          #B86A00;
+}
+
 html, body {
   height: 100%;
   background: var(--bg-app);
   color: var(--text-primary);
   font-family: var(--font);
-  font-size: 14px;
+  font-size: 18px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Sidebar from './lib/components/Sidebar.svelte';
   import Topbar from './lib/components/Topbar.svelte';
   import LiveTradePage from './lib/components/LiveTradePage.svelte';
@@ -9,6 +10,9 @@
   import ReplayPage from './lib/components/ReplayPage.svelte';
   import DashboardPage from './lib/components/DashboardPage.svelte';
   import { navState } from './lib/stores/nav.svelte';
+  import { themeStore } from './lib/stores/theme.svelte';
+
+  onMount(() => { themeStore.init(); });
 
   let liveTradeRef: ReturnType<typeof LiveTradePage> | undefined;
 

@@ -353,8 +353,8 @@
     gap: 4px;
   }
 
-  .metric-label { font-size: 11px; color: var(--text-muted); }
-  .metric-value { font-size: 15px; font-weight: 500; color: var(--text-primary); }
+  .metric-label { font-size: 13px; color: var(--text-muted); }
+  .metric-value { font-size: 26px; font-weight: 500; color: var(--text-primary); }
 
   /* ── Sparkline card ──────────────────────────────────────────────────────── */
 
@@ -417,12 +417,12 @@
 
   /* ── Table ───────────────────────────────────────────────────────────────── */
 
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
   thead tr { border-bottom: 1px solid var(--border); }
 
   th {
     padding: 6px 10px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -444,7 +444,7 @@
 
   .mono    { font-family: 'SF Mono', 'Fira Code', monospace; }
   .bold    { font-weight: 600; }
-  .small   { font-size: 11px; }
+  .small   { font-size: 13px; }
   .muted   { color: var(--text-muted); }
   .nowrap  { white-space: nowrap; }
   .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
