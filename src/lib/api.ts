@@ -18,27 +18,29 @@ async function request<T>(method: string, path: string, body?: unknown, signal?:
 export const api = {
   health: () => request<{ status: string }>('GET', '/health'),
 
-  account: () => request<AccountSummary>('GET', '/api/v1/account'),
+  account: (accountId: string) =>
+    request<AccountSummary>('GET', `/api/v1/accounts/${accountId}/account`),
 
-  trades: (signal?: AbortSignal) => request<OpenTrade[]>('GET', '/api/v1/trades', undefined, signal),
+  trades: (accountId: string, signal?: AbortSignal) =>
+    request<OpenTrade[]>('GET', `/api/v1/accounts/${accountId}/trades`, undefined, signal),
 
-  closeTrade: (tradeId: string, units = 0) =>
-    request<CloseTradeResult>('DELETE', `/api/v1/trades/${tradeId}?units=${units}`),
+  closeTrade: (accountId: string, tradeId: string, units = 0) =>
+    request<CloseTradeResult>('DELETE', `/api/v1/accounts/${accountId}/trades/${tradeId}?units=${units}`),
 
-  updateStop: (tradeId: string, stopPrice: number, takePrice: number) =>
+  updateStop: (accountId: string, tradeId: string, stopPrice: number, takePrice: number) =>
     request<{ trade_id: string; status: string }>(
-      'PATCH', `/api/v1/trades/${tradeId}/stop`,
+      'PATCH', `/api/v1/accounts/${accountId}/trades/${tradeId}/stop`,
       { stop_price: stopPrice, take_price: takePrice },
     ),
 
-  transactions: (sinceId = 0) =>
-    request<TransactionsResult>('GET', `/api/v1/transactions?since_id=${sinceId}`),
+  transactions: (accountId: string, sinceId = 0) =>
+    request<TransactionsResult>('GET', `/api/v1/accounts/${accountId}/transactions?since_id=${sinceId}`),
 
-  placeTrade: (req: {
+  placeTrade: (accountId: string, req: {
     instrument: string; side: string;
     risk_pct: number; stop_pips: number;
     units?: number; confirm: boolean;
-  }) => request<PlaceOrderResult>('POST', '/api/v1/trades', req),
+  }) => request<PlaceOrderResult>('POST', `/api/v1/accounts/${accountId}/trades`, req),
 
   runBacktest: (configPaths: string[]) =>
     request<BacktestResult>('POST', '/api/v1/backtests/run', { config_paths: configPaths }),

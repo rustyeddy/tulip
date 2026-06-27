@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { sseStore, sseLog, type SSEStatus } from '../sse';
   import { api, type AccountSummary, type OpenTrade, type Transaction } from '../api';
+  import { activeAccountId } from '../stores/nav.svelte';
   import EquitySparkline from './EquitySparkline.svelte';
 
   // ── Formatting ────────────────────────────────────────────────────────────
@@ -12,20 +13,12 @@
   function plCls(n: number)  { return n >= 0 ? 'pos' : 'neg'; }
   function sideCls(u: number){ return u > 0 ? 'pos' : 'neg'; }
 
-  // ── SSE: account stream ───────────────────────────────────────────────────
-
   const BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
-  const { data: accountStore, status: accountStatusStore } =
-    sseStore<AccountSummary>(`${BASE}/api/v1/stream/account`, 'account');
 
   let account       = $state<AccountSummary | null>(null);
   let accountStatus = $state<SSEStatus>('connecting');
   let navHistory    = $state<number[]>([]);
-
-  // ── SSE: transaction event log ────────────────────────────────────────────
-
-  const eventsStore = sseLog<Transaction>(`${BASE}/api/v1/stream/events`, 'transaction', 50);
-  let events = $state<Transaction[]>([]);
+  let events        = $state<Transaction[]>([]);
 
   // ── Health check ──────────────────────────────────────────────────────────
 
@@ -51,18 +44,22 @@
   let lastTxId = 0;
 
   async function loadTrades() {
+    const id = activeAccountId();
+    if (!id) { tradesLoading = false; return; }
     tradesAbort?.abort();
     tradesAbort = new AbortController();
     try {
-      openTrades = await api.trades(tradesAbort.signal);
+      openTrades = await api.trades(id, tradesAbort.signal);
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') return;
     } finally { tradesLoading = false; }
   }
 
   async function loadTransactions() {
+    const id = activeAccountId();
+    if (!id) { txLoading = false; return; }
     try {
-      const res = await api.transactions(lastTxId);
+      const res = await api.transactions(id, lastTxId);
       const incoming = res.transactions ?? [];
       if (incoming.length > 0) {
         transactions.unshift(...incoming);
@@ -103,6 +100,19 @@
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
+  // Reconnect SSE whenever the active account changes.
+  $effect(() => {
+    const id = activeAccountId();
+    if (!id) return;
+    const base = `${BASE}/api/v1/accounts/${id}`;
+    const { data: acctData, status: acctStatus } = sseStore<AccountSummary>(`${base}/stream/account`, 'account');
+    const evtLog = sseLog<Transaction>(`${base}/stream/events`, 'transaction', 50);
+    const unsubAccount = acctData.subscribe(v => { account = v; if (v) navHistory = [...navHistory, v.NAV].slice(-120); });
+    const unsubStatus  = acctStatus.subscribe(v => { accountStatus = v; });
+    const unsubEvents  = evtLog.subscribe(v => { events = v; });
+    return () => { unsubAccount(); unsubStatus(); unsubEvents(); };
+  });
+
   onMount(() => {
     checkHealth();
     loadTrades();
@@ -112,21 +122,11 @@
     const tradesInterval = setInterval(loadTrades,  5_000);
     const txInterval     = setInterval(loadTransactions, 30_000);
 
-    const unsubAccount = accountStore.subscribe(v => {
-      account = v;
-      if (v) navHistory = [...navHistory, v.NAV].slice(-120);
-    });
-    const unsubStatus = accountStatusStore.subscribe(v => { accountStatus = v; });
-    const unsubEvents = eventsStore.subscribe(v => { events = v; });
-
     return () => {
       clearInterval(healthInterval);
       clearInterval(tradesInterval);
       clearInterval(txInterval);
       tradesAbort?.abort();
-      unsubAccount();
-      unsubStatus();
-      unsubEvents();
     };
   });
 </script>

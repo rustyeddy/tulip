@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { api, type OpenTrade, type PlaceOrderProposal } from '../api';
+  import { activeAccountId } from '../stores/nav.svelte';
   import ConfirmDialog from './ConfirmDialog.svelte';
   import { fmtPrice, fmtMoney, plClass, side, sideClass } from '../utils';
 
@@ -14,10 +15,12 @@
   let fetchAbort: AbortController | null = null;
 
   async function loadTrades() {
+    const id = activeAccountId();
+    if (!id) { loading = false; return; }
     fetchAbort?.abort();
     fetchAbort = new AbortController();
     try {
-      trades = await api.trades(fetchAbort.signal);
+      trades = await api.trades(id, fetchAbort.signal);
       fetchError = '';
     } catch (e) {
       if (e instanceof DOMException && e.name === 'AbortError') return;
@@ -59,7 +62,7 @@
     if (!selected) return;
     updateLoading = true;
     try {
-      await api.updateStop(selected.ID, parseFloat(stopInput) || 0, parseFloat(takeInput) || 0);
+      await api.updateStop(activeAccountId(), selected.ID, parseFloat(stopInput) || 0, parseFloat(takeInput) || 0);
       updateMsg = 'Updated.';
       await loadTrades();
       setTimeout(() => { updateMsg = ''; }, 3000);
@@ -82,7 +85,7 @@
     closeLoading = true;
     closeMsg = '';
     try {
-      await api.closeTrade(selected.ID, parseInt(closeUnits) || 0);
+      await api.closeTrade(activeAccountId(), selected.ID, parseInt(closeUnits) || 0);
       closeMsg = 'Trade closed.';
       selected = null;
       await loadTrades();
@@ -108,7 +111,7 @@
   async function previewOrder() {
     previewLoading = true;
     try {
-      const result = await api.placeTrade({
+      const result = await api.placeTrade(activeAccountId(), {
         instrument: orderInstrument,
         side: orderSide,
         stop_pips: orderStopPips,
@@ -127,7 +130,7 @@
   async function placeOrder() {
     placeLoading = true;
     try {
-      await api.placeTrade({
+      await api.placeTrade(activeAccountId(), {
         instrument: orderInstrument,
         side: orderSide,
         stop_pips: orderStopPips,

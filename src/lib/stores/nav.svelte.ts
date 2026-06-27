@@ -52,15 +52,38 @@ export function navigateTo(pageKey: string): void {
   }
 }
 
-export const accountState = $state<{ accounts: string[]; activeIndex: number }>({
-  accounts: ['Alpaca — Main', 'Alpaca — Paper', 'Interactive Brokers'],
+export interface AccountInfo {
+  id: string;
+  is_default: boolean;
+}
+
+export const accountState = $state<{ accounts: AccountInfo[]; activeIndex: number }>({
+  accounts: [],
   activeIndex: 0,
 });
 
+export async function initAccounts(): Promise<void> {
+  const base = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+  try {
+    const res = await fetch(`${base}/api/v1/accounts`);
+    if (!res.ok) return;
+    const data = await res.json();
+    accountState.accounts = data.accounts ?? [];
+    const defaultIdx = accountState.accounts.findIndex((a) => a.is_default);
+    if (defaultIdx >= 0) accountState.activeIndex = defaultIdx;
+  } catch { /* backend offline */ }
+}
+
 export function cycleAccount(): void {
+  if (accountState.accounts.length === 0) return;
   accountState.activeIndex = (accountState.activeIndex + 1) % accountState.accounts.length;
 }
 
+export function activeAccountId(): string {
+  return accountState.accounts[accountState.activeIndex]?.id ?? '';
+}
+
 export function activeAccountLabel(): string {
-  return accountState.accounts[accountState.activeIndex];
+  const acc = accountState.accounts[accountState.activeIndex];
+  return acc ? acc.id : 'No account';
 }

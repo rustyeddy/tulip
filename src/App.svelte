@@ -9,10 +9,13 @@
   import BacktestsPage from './lib/components/BacktestsPage.svelte';
   import ReplayPage from './lib/components/ReplayPage.svelte';
   import DashboardPage from './lib/components/DashboardPage.svelte';
-  import { navState } from './lib/stores/nav.svelte';
+  import { navState, initAccounts } from './lib/stores/nav.svelte';
   import { themeStore } from './lib/stores/theme.svelte';
 
-  onMount(() => { themeStore.init(); });
+  onMount(() => {
+    themeStore.init();
+    initAccounts();
+  });
 
   let liveTradeRef: ReturnType<typeof LiveTradePage> | undefined;
 
