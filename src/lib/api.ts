@@ -61,7 +61,41 @@ export const api = {
 
   replay: (req: ReplayRequest) =>
     request<ReplayResult>('POST', '/api/v1/replay', req),
+
+  candles: async (instrument: string, timeframe: string, from: string, to?: string): Promise<CandleBar[]> => {
+    const params = new URLSearchParams({ timeframe, from });
+    if (to) params.set('to', to);
+    const res = await fetch(`${BASE}/api/v1/candles/${instrument}?${params}`);
+    if (!res.ok) {
+      const text = await res.text().catch(() => res.statusText);
+      throw new Error(`candles ${instrument}/${timeframe} → ${res.status}: ${text}`);
+    }
+    return parseCandleCSV(await res.text());
+  },
 };
+
+function parseCandleCSV(text: string): CandleBar[] {
+  let scale = 1;
+  const bars: CandleBar[] = [];
+  for (const line of text.split('\n')) {
+    if (line.startsWith('#')) {
+      const m = line.match(/scale=(\d+)/);
+      if (m) scale = parseInt(m[1], 10);
+      continue;
+    }
+    if (line.startsWith('Timestamp') || line.trim() === '') continue;
+    const cols = line.split(',');
+    if (cols.length < 5) continue;
+    const time  = parseInt(cols[0], 10);
+    const high  = parseInt(cols[1], 10) / scale;
+    const open  = parseInt(cols[2], 10) / scale;
+    const low   = parseInt(cols[3], 10) / scale;
+    const close = parseInt(cols[4], 10) / scale;
+    if (!isFinite(time) || !isFinite(close)) continue;
+    bars.push({ time, open, high, low, close });
+  }
+  return bars;
+}
 
 // ── Types (mirror Go / OANDA JSON field names) ────────────────────────────
 
