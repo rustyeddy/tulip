@@ -10,7 +10,7 @@
 
 <aside class="sidebar">
   <div class="logo-area">
-    <div class="logo">
+    <a class="logo" href="#dashboard" onclick={(e) => { e.preventDefault(); navigateTo('dashboard'); }} aria-label="Go to dashboard">
       <div class="logo-icon">
         <i class="ti ti-chart-candle" aria-hidden="true"></i>
       </div>
@@ -18,7 +18,7 @@
         <span class="logo-name">Tulip</span>
         <span class="logo-sub">trader platform</span>
       </div>
-    </div>
+    </a>
   </div>
 
   <nav aria-label="Main navigation">
@@ -72,6 +72,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    border-radius: var(--radius-md);
+    transition: background 0.1s;
+  }
+
+  .logo:hover {
+    background: var(--bg-hover);
   }
 
   .logo-icon {
